@@ -1,6 +1,6 @@
 """
-AI Solutions – SaaS Log Analytics Platform
-Refined SaaS-style Interface (Senior Developer Edition)
+AI Solutions – Institutional Intelligence Platform
+Premium BAC-Inspired Overhaul (Senior Developer Edition)
 """
 
 import dash
@@ -10,16 +10,15 @@ import plotly.graph_objects as go
 import pandas as pd
 import flask
 
-# ── SaaS Design System ───────────────────────────────────────────────────────
-BG      = "#fcfcfc"  # Ultra-clean white-grey
-SIDEBAR = "#ffffff"
-CARD_BG = "#ffffff"
-ACCENT  = "#2563eb"  # Sharp SaaS Blue
-TEXT    = "#0f172a"  # Slate-900
-MUTED   = "#64748b"  # Slate-500
-BORDER  = "#e2e8f0"  # Slate-200
-SUCCESS = "#10b981"  # Emerald-500
-DANGER  = "#ef4444"  # Rose-500
+# ── Institutional Design System (BAC Inspired) ──────────────────────────────
+NAVY    = "#003366"  
+GOLD    = "#C5A059"  
+BG      = "#f8fafc"  
+SUCCESS = "#10b981"
+DANGER  = "#ef4444"
+TEXT    = "#1e293b"
+MUTED   = "#64748b"
+BORDER  = "#e2e8f0"
 
 # ── Authorised users ─────────────────────────────────────────────────────────
 USERS = {
@@ -32,94 +31,134 @@ USERS = {
 CSV_PATH = "AI_Solutions_Web_Log_Dataset.csv"
 
 def load_data():
-    df = pd.read_csv(CSV_PATH)
-    df["timestamp"] = pd.to_datetime(df["timestamp"], dayfirst=True)
-    df["date"]      = df["timestamp"].dt.date
-    df["hour"]      = df["timestamp"].dt.hour
-    df["week"]      = df["timestamp"].dt.isocalendar().week.astype(int)
-    df["status_code"] = df["status_code"].astype(str)
-    return df
+    try:
+        df = pd.read_csv(CSV_PATH)
+        df["timestamp"] = pd.to_datetime(df["timestamp"], dayfirst=True)
+        df["date"]      = df["timestamp"].dt.date
+        df["hour"]      = df["timestamp"].dt.hour
+        df["week"]      = df["timestamp"].dt.isocalendar().week.astype(int)
+        df["status_code"] = df["status_code"].astype(str)
+        return df
+    except Exception as e:
+        print(f"Error loading data: {e}")
+        return pd.DataFrame()
 
 df = load_data()
 
 SERVICE_COLOURS = {
-    "Job Request":       "#2563eb",
-    "Demo Request":      "#0ea5e9",
-    "Demo Submission":   "#3b82f6",
-    "AI Assistant":      "#6366f1",
-    "Promotional Event": "#f59e0b",
-    "Prototype Request": "#10b981",
-    "Homepage":          "#94a3b8",
-    "Image Asset":       "#cbd5e1",
-    "CSS Asset":         "#e2e8f0",
-    "Job Application":   "#06b6d4",
-    "Contact Page":      "#f43f5e",
+    "Job Request":       NAVY,
+    "Demo Request":      GOLD,
+    "Demo Submission":   "#005A9C",
+    "AI Assistant":      "#2C3E50",
+    "Promotional Event": "#E67E22",
+    "Prototype Request": SUCCESS,
+    "Homepage":          "#7F8C8D",
+    "Image Asset":       "#BDC3C7",
+    "CSS Asset":         "#ECF0F1",
+    "Job Application":   "#3498DB",
+    "Contact Page":      DANGER,
 }
 
 # ── Dash Setup ───────────────────────────────────────────────────────────────
 server = flask.Flask(__name__)
-app = dash.Dash(__name__, server=server, suppress_callback_exceptions=True)
-app.title = "AI Solutions"
-GOOGLE_FONT = "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+app = dash.Dash(
+    __name__, 
+    server=server, 
+    suppress_callback_exceptions=True,
+    external_stylesheets=[
+        "https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap",
+        "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+    ]
+)
+app.title = "AI Solutions | Institutional Intelligence"
 
 # ═══════════════════════════════════════════════════════════════════════════════
 #  COMPONENTS
 # ═══════════════════════════════════════════════════════════════════════════════
-def stat_card(title, value, subtitle="", colour=ACCENT):
+
+def stat_card(title, value, subtitle="", colour=NAVY):
     return html.Div(
-        style={
-            "background": CARD_BG, "borderRadius": "12px",
-            "padding": "24px", "flex": "1",
-            "border": f"1px solid {BORDER}",
-            "transition": "transform 0.2s, box-shadow 0.2s",
-        },
+        className="glass-card stat-card fade-in",
         children=[
-            html.P(title, style={"color": MUTED, "fontSize": "11px", "fontWeight": "600", "margin": "0 0 8px", "letterSpacing": "0.05em", "textTransform": "uppercase"}),
-            html.H2(value, style={"color": TEXT, "fontSize": "28px", "fontWeight": "700", "margin": "0 0 2px"}),
-            html.P(subtitle, style={"color": MUTED, "fontSize": "12px", "margin": "0", "display": "flex", "alignItems": "center"}),
+            html.Div(style={"display": "flex", "justifyContent": "space-between", "alignItems": "center"}, children=[
+                html.P(title, style={"color": MUTED, "fontSize": "0.75rem", "fontWeight": "700", "textTransform": "uppercase", "letterSpacing": "0.05em", "margin": "0"}),
+                html.Div(style={"width": "8px", "height": "8px", "borderRadius": "50%", "background": colour})
+            ]),
+            html.H2(value, className="stat-value"),
+            html.P(style={"color": MUTED, "fontSize": "0.8rem", "margin": "0", "display": "flex", "alignItems": "center"}, children=[
+                html.I(className="fa-solid fa-arrow-up", style={"marginRight": "4px", "color": SUCCESS, "fontSize": "0.7rem"}) if "Success" in subtitle or "Volume" in title else "",
+                html.Span(subtitle)
+            ]),
         ]
     )
 
-def section_title(text):
-    return html.H3(text, style={"color": TEXT, "fontSize": "14px", "fontWeight": "600", "margin": "0 0 24px", "letterSpacing": "-0.01em"})
+def section_header(title, subtitle="Live Institutional Insights"):
+    return html.Div(
+        style={"marginBottom": "2rem"},
+        children=[
+            html.H3(title, style={"color": NAVY, "fontSize": "1.25rem", "fontWeight": "700", "margin": "0", "fontFamily": "Montserrat"}),
+            html.P(subtitle, style={"color": MUTED, "fontSize": "0.75rem", "margin": "0.25rem 0 0", "textTransform": "uppercase", "letterSpacing": "0.1em"})
+        ]
+    )
 
-def chart_card(children):
-    return html.Div(style={"background": CARD_BG, "borderRadius": "12px", "padding": "28px", "border": f"1px solid {BORDER}"}, children=children)
-
-chart_style = {
+chart_theme = {
     "plot_bgcolor":  "rgba(0,0,0,0)",
     "paper_bgcolor": "rgba(0,0,0,0)",
-    "font_family":   "Inter, sans-serif",
-    "font_color":    TEXT,
-    "margin":        dict(l=10, r=10, t=10, b=10),
+    "font": {"family": "Inter, sans-serif", "color": TEXT},
+    "margin": dict(l=40, r=20, t=40, b=40),
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
 #  LOGIN PAGE
 # ═══════════════════════════════════════════════════════════════════════════════
+
 login_layout = html.Div(
-    style={"minHeight": "100vh", "background": BG, "display": "flex", "alignItems": "center", "justifyContent": "center", "fontFamily": "Inter, sans-serif"},
+    className="login-container",
     children=[
-        html.Link(rel="stylesheet", href=GOOGLE_FONT),
         html.Div(
-            style={"width": "100%", "maxWidth": "360px", "textAlign": "center"},
+            className="login-box fade-in",
             children=[
-                html.Img(src="/assets/logo.png", style={"height": "64px", "marginBottom": "24px"}),
-                html.H1("AI Solutions", style={"color": TEXT, "fontSize": "24px", "fontWeight": "700", "margin": "0 0 8px", "letterSpacing": "-0.02em"}),
-                html.P("Log Analytics Platform", style={"color": MUTED, "fontSize": "14px", "marginBottom": "32px"}),
-                
+                # Brand Side
                 html.Div(
-                    style={"background": CARD_BG, "borderRadius": "12px", "padding": "32px", "border": f"1px solid {BORDER}", "textAlign": "left", "boxShadow": "0 4px 6px -1px rgba(0,0,0,0.05)"},
+                    className="login-visual",
                     children=[
-                        html.Label("Username", style={"color": TEXT, "fontSize": "13px", "fontWeight": "500"}),
-                        dcc.Input(id="login-username", type="text", placeholder="Enter username", debounce=True, style={"width": "100%", "height": "42px", "padding": "0 12px", "background": "white", "border": f"1px solid {BORDER}", "borderRadius": "6px", "color": TEXT, "fontSize": "14px", "marginTop": "6px", "marginBottom": "20px", "boxSizing": "border-box", "outline": "none"}),
-                        html.Label("Password", style={"color": TEXT, "fontSize": "13px", "fontWeight": "500"}),
-                        dcc.Input(id="login-password", type="password", placeholder="••••••••", debounce=True, style={"width": "100%", "height": "42px", "padding": "0 12px", "background": "white", "border": f"1px solid {BORDER}", "borderRadius": "6px", "color": TEXT, "fontSize": "14px", "marginTop": "6px", "marginBottom": "12px", "boxSizing": "border-box", "outline": "none"}),
-                        html.Div(id="login-error", style={"color": DANGER, "fontSize": "12px", "marginBottom": "20px", "minHeight": "18px"}),
-                        html.Button("Sign In", id="login-btn", n_clicks=0, style={"width": "100%", "padding": "12px", "background": TEXT, "border": "none", "borderRadius": "6px", "color": "white", "fontSize": "14px", "fontWeight": "600", "cursor": "pointer"}),
+                        html.Img(src=app.get_asset_url("logo.png"), style={"width": "120px", "marginBottom": "2rem", "borderRadius": "10px"}),
+                        html.Div(
+                            children=[
+                                html.H1("AI SOLUTIONS", style={"fontSize": "3.5rem", "fontWeight": "800", "margin": "0", "letterSpacing": "-0.04em", "lineHeight": "1"}),
+                                html.Div(style={"width": "4rem", "height": "4px", "background": "white", "marginBottom": "2rem", "marginTop": "2rem"}),
+                                html.P("Empowering data-driven decisions with institutional-grade web analytics and predictive insights.", style={"fontSize": "1rem", "lineHeight": "1.6", "opacity": "0.8"}),
+                            ]
+                        ),
                     ]
                 ),
-                html.P("© 2026 AI Solutions", style={"color": MUTED, "fontSize": "12px", "marginTop": "32px"}),
+                # Form Side
+                html.Div(
+                    className="login-form",
+                    children=[
+                        html.H2("System Portal", style={"color": NAVY, "fontSize": "1.875rem", "fontWeight": "700", "marginBottom": "0.5rem"}),
+                        html.P("Enter your credentials to access the hub.", style={"color": MUTED, "fontSize": "0.9375rem", "marginBottom": "2.5rem"}),
+                        
+                        html.Div(style={"marginBottom": "1.5rem"}, children=[
+                            html.Label("Username", style={"display": "block", "fontSize": "0.75rem", "fontWeight": "700", "color": NAVY, "textTransform": "uppercase", "marginBottom": "0.5rem"}),
+                            dcc.Input(id="login-username", type="text", placeholder="Enter ID", className="login-input"),
+                        ]),
+                        
+                        html.Div(style={"marginBottom": "2rem"}, children=[
+                            html.Label("Password", style={"display": "block", "fontSize": "0.75rem", "fontWeight": "700", "color": NAVY, "textTransform": "uppercase", "marginBottom": "0.5rem"}),
+                            dcc.Input(id="login-password", type="password", placeholder="••••••••", className="login-input"),
+                        ]),
+                        
+                        html.Div(id="login-error", style={"color": DANGER, "fontSize": "0.875rem", "marginBottom": "1.5rem", "minHeight": "1.25rem"}),
+                        
+                        html.Button(
+                            "SIGN IN TO PORTAL", 
+                            id="login-btn", 
+                            n_clicks=0, 
+                            style={"width": "100%", "padding": "1.25rem", "background": NAVY, "color": "white", "border": "none", "borderRadius": "0.75rem", "fontSize": "0.875rem", "fontWeight": "700", "cursor": "pointer", "letterSpacing": "0.05em", "transition": "background 0.3s"}
+                        ),
+                    ]
+                )
             ]
         )
     ]
@@ -128,6 +167,7 @@ login_layout = html.Div(
 # ═══════════════════════════════════════════════════════════════════════════════
 #  PAGES
 # ═══════════════════════════════════════════════════════════════════════════════
+
 def generate_overview_page(filtered):
     total = len(filtered)
     success_cnt = len(filtered[filtered["status_code"] == "200"])
@@ -135,27 +175,43 @@ def generate_overview_page(filtered):
     countries_n = filtered["country"].nunique()
     success_pct = f"{success_cnt/total*100:.1f}%" if total > 0 else "0%"
 
-    kpi = html.Div(
-        style={"display": "flex", "gap": "24px", "marginBottom": "32px"},
-        children=[
-            stat_card("Total Traffic", f"{total:,}", "Individual requests"),
-            stat_card("Success Rate", success_pct, f"{success_cnt} Successful"),
-            stat_card("Critical Errors", f"{error_cnt}", "Status 500"),
-            stat_card("Market Reach", str(countries_n), "Active countries"),
-        ]
-    )
+    # Summary Charts for Overview
+    hourly_data = filtered.groupby("hour").size().reset_index(name="count")
+    fig_hour = px.line(hourly_data, x="hour", y="count", color_discrete_sequence=[NAVY])
+    fig_hour.update_layout(**chart_theme, height=250, margin=dict(l=10, r=10, t=10, b=10))
+    fig_hour.update_xaxes(showgrid=False)
+
+    service_data = filtered.groupby("service_type").size().reset_index(name="count").sort_values("count", ascending=False).head(5)
+    fig_service = px.pie(service_data, names="service_type", values="count", color_discrete_sequence=[NAVY, GOLD, SUCCESS, "#cbd5e1", DANGER], hole=0.6)
+    fig_service.update_layout(**chart_theme, height=250, showlegend=False, margin=dict(l=10, r=10, t=10, b=10))
+
     return html.Div([
-        kpi,
         html.Div(
-            style={"display": "grid", "gridTemplateColumns": "1fr", "gap": "24px"},
+            style={"display": "grid", "gridTemplateColumns": "repeat(4, 1fr)", "gap": "1.5rem", "marginBottom": "2.5rem"},
             children=[
-                chart_card([
-                    section_title("Operational Overview"),
-                    html.P("Monitor real-time AI infrastructure performance. This platform provides deep visibility into traffic origins, service load, and response metrics across the global AI Solutions network.", style={"color": MUTED, "lineHeight": "1.6", "fontSize": "14px"}),
-                    html.Div(style={"height": "1px", "background": BORDER, "margin": "24px 0"}),
-                    html.Div(style={"display": "flex", "alignItems": "center", "gap": "8px"}, children=[
-                        html.Div(style={"width": "6px", "height": "6px", "borderRadius": "50%", "background": SUCCESS}),
-                        html.P("All systems functional", style={"color": SUCCESS, "fontSize": "12px", "fontWeight": "600", "margin": "0"})
+                stat_card("Total Traffic", f"{total:,}", "Aggregated Logs", NAVY),
+                stat_card("System Health", success_pct, "Successful Requests", SUCCESS),
+                stat_card("Security Alerts", f"{error_cnt}", "Critical Errors", DANGER),
+                stat_card("Global Reach", str(countries_n), "Active Regions", GOLD),
+            ]
+        ),
+        html.Div(
+            style={"display": "grid", "gridTemplateColumns": "1fr 1fr 1.2fr", "gap": "1.5rem"},
+            children=[
+                html.Div(className="glass-card", style={"padding": "1.5rem"}, children=[
+                    section_header("Traffic Velocity", "Hourly Distribution"),
+                    dcc.Graph(figure=fig_hour, config={"displayModeBar": False})
+                ]),
+                html.Div(className="glass-card", style={"padding": "1.5rem"}, children=[
+                    section_header("Top Services", "Service Matrix"),
+                    dcc.Graph(figure=fig_service, config={"displayModeBar": False})
+                ]),
+                html.Div(className="glass-card", style={"padding": "2rem"}, children=[
+                    section_header("Operational Status"),
+                    html.P("This high-fidelity dashboard provides a comprehensive analytical overview of the AI Solutions infrastructure. By leveraging institutional-grade metrics, administrators can monitor real-time traffic fluctuations.", style={"color": TEXT, "lineHeight": "1.6", "fontSize": "0.85rem"}),
+                    html.Div(style={"marginTop": "1.5rem", "padding": "1.5rem", "borderRadius": "1rem", "background": f"{SUCCESS}10", "textAlign": "center"}, children=[
+                        html.I(className="fa-solid fa-circle-check", style={"color": SUCCESS, "fontSize": "2rem", "marginBottom": "0.5rem"}),
+                        html.H4("System Optimal", style={"color": SUCCESS, "margin": "0", "fontSize": "1.1rem"}),
                     ])
                 ])
             ]
@@ -164,43 +220,104 @@ def generate_overview_page(filtered):
 
 def generate_countries_page(filtered):
     country_counts = filtered.groupby("country").size().reset_index(name="count")
-    fig_map = px.choropleth(country_counts, locations="country", locationmode="country names", color="count", color_continuous_scale="Blues")
-    fig_map.update_layout(**chart_style, geo=dict(bgcolor="rgba(0,0,0,0)", showframe=False))
+    
+    fig_map = px.choropleth(
+        country_counts, 
+        locations="country", 
+        locationmode="country names", 
+        color="count", 
+        color_continuous_scale=[[0, "#f8fafc"], [0.2, "#cbd5e1"], [1, NAVY]],
+        labels={"count": "Requests"}
+    )
+    fig_map.update_layout(**chart_theme, geo=dict(bgcolor="rgba(0,0,0,0)", showframe=False, projection_type="equirectangular"))
 
-    fig_bar = px.bar(country_counts.sort_values("count", ascending=False), x="country", y="count", color_discrete_sequence=[ACCENT])
-    fig_bar.update_layout(**chart_style)
+    fig_bar = px.bar(
+        country_counts.sort_values("count", ascending=False).head(10), 
+        x="country", 
+        y="count",
+        color_discrete_sequence=[GOLD]
+    )
+    fig_bar.update_layout(**chart_theme, xaxis_title="", yaxis_title="Requests")
 
-    return html.Div(style={"display": "grid", "gap": "32px"}, children=[
-        chart_card([section_title("Geographical Distribution"), dcc.Graph(figure=fig_map, config={"displayModeBar": False})]),
-        chart_card([section_title("Traffic by Region"), dcc.Graph(figure=fig_bar, config={"displayModeBar": False})])
+    return html.Div(style={"display": "grid", "gap": "1.5rem"}, children=[
+        html.Div(className="glass-card", style={"padding": "2rem"}, children=[
+            section_header("Geographic Traffic Distribution"),
+            dcc.Graph(figure=fig_map, config={"displayModeBar": False})
+        ]),
+        html.Div(className="glass-card", style={"padding": "2rem"}, children=[
+            section_header("Top 10 Performing Regions"),
+            dcc.Graph(figure=fig_bar, config={"displayModeBar": False})
+        ])
     ])
 
 def generate_services_page(filtered):
     service_counts = filtered.groupby("service_type").size().reset_index(name="count")
-    fig_pie = px.pie(service_counts, names="service_type", values="count", color="service_type", color_discrete_map=SERVICE_COLOURS, hole=0.7)
-    fig_pie.update_layout(**chart_style)
-    fig_pie.update_traces(textinfo="none")
+    
+    fig_pie = px.pie(
+        service_counts, 
+        names="service_type", 
+        values="count", 
+        color="service_type", 
+        color_discrete_map=SERVICE_COLOURS, 
+        hole=0.7
+    )
+    fig_pie.update_layout(**chart_theme, showlegend=True, legend=dict(orientation="h", yanchor="bottom", y=-0.2, xanchor="center", x=0.5))
+    fig_pie.update_traces(textinfo="percent", textfont_size=10)
 
-    fig_bar = px.bar(service_counts.sort_values("count", ascending=True), x="count", y="service_type", orientation="h", color="service_type", color_discrete_map=SERVICE_COLOURS)
-    fig_bar.update_layout(**chart_style, showlegend=False)
+    fig_bar = px.bar(
+        service_counts.sort_values("count", ascending=True), 
+        x="count", 
+        y="service_type", 
+        orientation="h", 
+        color="service_type", 
+        color_discrete_map=SERVICE_COLOURS
+    )
+    fig_bar.update_layout(**chart_theme, showlegend=False, xaxis_title="Total Logs")
 
-    return html.Div(style={"display": "grid", "gridTemplateColumns": "1fr 1fr", "gap": "32px"}, children=[
-        chart_card([section_title("Service Composition"), dcc.Graph(figure=fig_pie, config={"displayModeBar": False})]),
-        chart_card([section_title("Usage breakdown"), dcc.Graph(figure=fig_bar, config={"displayModeBar": False})])
+    return html.Div(style={"display": "grid", "gridTemplateColumns": "1fr 1fr", "gap": "1.5rem"}, children=[
+        html.Div(className="glass-card", style={"padding": "2rem"}, children=[
+            section_header("Service Utilization Matrix"),
+            dcc.Graph(figure=fig_pie, config={"displayModeBar": False})
+        ]),
+        html.Div(className="glass-card", style={"padding": "2rem"}, children=[
+            section_header("Workload Distribution"),
+            dcc.Graph(figure=fig_bar, config={"displayModeBar": False})
+        ])
     ])
 
 def generate_trends_page(filtered):
     daily = filtered.groupby("date").size().reset_index(name="requests")
+    
     fig_trend = go.Figure()
-    fig_trend.add_trace(go.Scatter(x=daily["date"], y=daily["requests"], mode="lines", line=dict(color=ACCENT, width=2.5), fill="tozeroy", fillcolor="rgba(37, 99, 235, 0.08)"))
-    fig_trend.update_layout(**chart_style, xaxis=dict(showgrid=False), yaxis=dict(gridcolor=BORDER))
+    fig_trend.add_trace(go.Scatter(
+        x=daily["date"], 
+        y=daily["requests"], 
+        mode="lines", 
+        line=dict(color=NAVY, width=3, shape="spline"),
+        fill="tozeroy", 
+        fillcolor="rgba(0, 51, 102, 0.05)"
+    ))
+    fig_trend.update_layout(**chart_theme, xaxis=dict(showgrid=False), yaxis=dict(gridcolor=BORDER))
 
-    fig_scatter = px.scatter(filtered[filtered["response_size"]>0], x="timestamp", y="response_size", color="service_type", color_discrete_map=SERVICE_COLOURS, opacity=0.5)
-    fig_scatter.update_layout(**chart_style)
+    fig_scatter = px.scatter(
+        filtered[filtered["response_size"]>0], 
+        x="timestamp", 
+        y="response_size", 
+        color="service_type", 
+        color_discrete_map=SERVICE_COLOURS, 
+        opacity=0.6
+    )
+    fig_scatter.update_layout(**chart_theme)
 
-    return html.Div(style={"display": "grid", "gap": "32px"}, children=[
-        chart_card([section_title("Traffic Velocity"), dcc.Graph(figure=fig_trend, config={"displayModeBar": False})]),
-        chart_card([section_title("Data Transfer Density"), dcc.Graph(figure=fig_scatter, config={"displayModeBar": False})])
+    return html.Div(style={"display": "grid", "gap": "1.5rem"}, children=[
+        html.Div(className="glass-card", style={"padding": "2rem"}, children=[
+            section_header("Temporal Activity Velocity"),
+            dcc.Graph(figure=fig_trend, config={"displayModeBar": False})
+        ]),
+        html.Div(className="glass-card", style={"padding": "2rem"}, children=[
+            section_header("Payload Response Correlation"),
+            dcc.Graph(figure=fig_scatter, config={"displayModeBar": False})
+        ])
     ])
 
 def generate_statistics_page(filtered):
@@ -208,27 +325,44 @@ def generate_statistics_page(filtered):
     for service in filtered["service_type"].unique():
         subset = filtered[(filtered["service_type"] == service) & (filtered["response_size"] > 0)]["response_size"]
         if not subset.empty:
-            stats_data.append({"Service": service, "Count": len(subset), "Mean": f"{subset.mean():,.0f} B", "Peak": f"{subset.max():,} B"})
+            stats_data.append({
+                "Service": service, 
+                "Count": len(subset), 
+                "Avg Size": f"{subset.mean():,.0f} B", 
+                "Peak": f"{subset.max():,} B"
+            })
     
     stats_table = dash_table.DataTable(
         data=stats_data,
         style_table={"overflowX": "auto"},
-        style_header={"backgroundColor": "white", "color": TEXT, "fontWeight": "600", "fontSize": "11px", "borderBottom": f"1px solid {TEXT}", "padding": "12px", "textTransform": "uppercase"},
-        style_cell={"backgroundColor": "white", "color": TEXT, "border": "none", "borderBottom": f"1px solid {BORDER}", "padding": "16px", "fontSize": "13px", "fontFamily": "Inter, sans-serif"},
+        style_header={"backgroundColor": NAVY, "color": "white", "fontWeight": "700", "fontSize": "0.75rem", "padding": "1rem", "textTransform": "uppercase"},
+        style_cell={"backgroundColor": "white", "color": TEXT, "border": "none", "borderBottom": f"1px solid {BORDER}", "padding": "1rem", "fontSize": "0.875rem", "fontFamily": "Inter"},
     )
 
     status_counts = filtered.groupby("status_code").size().reset_index(name="count")
-    fig_status = px.pie(status_counts, names="status_code", values="count", color_discrete_sequence=px.colors.qualitative.Prism, hole=0.75)
-    fig_status.update_layout(**chart_style)
+    fig_status = px.pie(
+        status_counts, 
+        names="status_code", 
+        values="count", 
+        color_discrete_sequence=[SUCCESS, GOLD, "#cbd5e1", DANGER], 
+        hole=0.7
+    )
+    fig_status.update_layout(**chart_theme)
 
-    return html.Div(style={"display": "grid", "gridTemplateColumns": "2fr 1fr", "gap": "32px"}, children=[
-        chart_card([section_title("Performance Metrics"), stats_table]),
-        chart_card([section_title("Status Code Health"), dcc.Graph(figure=fig_status, config={"displayModeBar": False})])
+    return html.Div(style={"display": "grid", "gridTemplateColumns": "1.5fr 1fr", "gap": "1.5rem"}, children=[
+        html.Div(className="glass-card", style={"padding": "2rem"}, children=[
+            section_header("Resource Performance Metrics"), 
+            stats_table
+        ]),
+        html.Div(className="glass-card", style={"padding": "2rem"}, children=[
+            section_header("Node Health Status"), 
+            dcc.Graph(figure=fig_status, config={"displayModeBar": False})
+        ])
     ])
 
 def generate_logs_page(filtered):
     display_cols = ["timestamp","ip_address","country","method","page","service_type","status_code"]
-    raw_df = filtered[display_cols].head(100).copy()
+    raw_df = filtered[display_cols].head(200).copy()
     raw_df["timestamp"] = raw_df["timestamp"].astype(str)
 
     raw_table = dash_table.DataTable(
@@ -236,14 +370,18 @@ def generate_logs_page(filtered):
         columns=[{"name": c.replace("_"," ").title(), "id": c} for c in display_cols],
         page_size=15,
         style_table={"overflowX": "auto"},
-        style_header={"backgroundColor": "white", "color": TEXT, "fontWeight": "600", "fontSize": "11px", "borderBottom": f"1px solid {TEXT}", "padding": "12px"},
-        style_cell={"backgroundColor": "white", "color": TEXT, "borderBottom": f"1px solid {BORDER}", "padding": "14px", "fontSize": "12px", "fontFamily": "Inter, sans-serif"},
+        style_header={"backgroundColor": NAVY, "color": "white", "fontWeight": "700", "fontSize": "0.75rem", "padding": "1rem"},
+        style_cell={"backgroundColor": "white", "color": TEXT, "borderBottom": f"1px solid {BORDER}", "padding": "1rem", "fontSize": "0.75rem", "fontFamily": "Inter"},
     )
-    return chart_card([section_title("Recent Activity Logs"), raw_table])
+    return html.Div(className="glass-card", style={"padding": "2rem"}, children=[
+        section_header("Verified Infrastructure Logs"),
+        raw_table
+    ])
 
 # ═══════════════════════════════════════════════════════════════════════════════
 #  MAIN LAYOUT
 # ═══════════════════════════════════════════════════════════════════════════════
+
 app.layout = html.Div([
     dcc.Location(id="url", refresh=False),
     dcc.Store(id="session-store", storage_type="session"),
@@ -252,71 +390,120 @@ app.layout = html.Div([
 
 def dashboard_layout(pathname):
     nav_links = [
-        ("/", "Dashboard"),
-        ("/countries", "Analytics"),
-        ("/services", "Services"),
-        ("/trends", "Velocity"),
-        ("/statistics", "Reporting"),
-        ("/logs", "Events"),
+        ("/", "Overview", "fa-solid fa-chart-pie"),
+        ("/countries", "Regional", "fa-solid fa-earth-africa"),
+        ("/services", "Services", "fa-solid fa-microchip"),
+        ("/trends", "Velocity", "fa-solid fa-gauge-high"),
+        ("/statistics", "Reporting", "fa-solid fa-layer-group"),
+        ("/logs", "Security", "fa-solid fa-shield-halved"),
     ]
     
     sidebar_items = []
-    for path, label in nav_links:
-        is_active = pathname == path or (pathname == "" and path == "/")
+    for path, label, icon_class in nav_links:
+        active_class = "nav-link active" if (pathname == path or (pathname == "" and path == "/")) else "nav-link"
         sidebar_items.append(
             dcc.Link(
-                label, href=path,
-                style={
-                    "display": "block", "color": TEXT if is_active else MUTED,
-                    "padding": "10px 16px", "borderRadius": "8px", "textDecoration": "none",
-                    "fontSize": "13px", "fontWeight": "500",
-                    "background": f"{BORDER}40" if is_active else "transparent",
-                    "marginBottom": "4px", "transition": "background 0.2s"
-                }
+                children=[
+                    html.I(className=f"{icon_class}", style={"marginRight": "15px", "fontSize": "1.1rem", "width": "20px", "textAlign": "center"}),
+                    html.Span(label)
+                ],
+                href=path,
+                className=active_class
             )
         )
 
     return html.Div(
-        style={"fontFamily": "Inter, sans-serif", "background": BG, "minHeight": "100vh", "display": "flex"},
         children=[
-            html.Link(rel="stylesheet", href=GOOGLE_FONT),
             # Sidebar
             html.Div(
-                style={"width": "240px", "background": SIDEBAR, "padding": "32px 20px", "display": "flex", "flexDirection": "column", "borderRight": f"1px solid {BORDER}", "minHeight": "100vh", "flexShrink": "0"},
+                className="sidebar",
                 children=[
                     html.Div(
-                        style={"marginBottom": "40px", "padding": "0 12px"},
+                        style={"marginBottom": "3rem", "padding": "0 0.5rem", "textAlign": "center"},
                         children=[
-                            html.Img(src="/assets/logo.png", style={"height": "32px", "marginBottom": "12px"}),
-                            html.H2("AI Solutions", style={"color": TEXT, "fontSize": "16px", "fontWeight": "700", "margin": "0", "letterSpacing": "-0.01em"}),
+                            html.Img(src=app.get_asset_url("logo.png"), style={"width": "80px", "marginBottom": "1.5rem", "borderRadius": "8px"}),
+                            html.H2("AI SOLUTIONS", style={"color": "white", "fontSize": "1.5rem", "fontWeight": "800", "margin": "0", "fontFamily": "Montserrat", "letterSpacing": "-0.04em"}),
+                            html.P("INTELLIGENCE PORTAL", style={"color": GOLD, "fontSize": "0.625rem", "fontWeight": "700", "margin": "0.25rem 0 0", "letterSpacing": "0.2em"})
                         ]
                     ),
-                    *sidebar_items,
-                    html.Div(style={"flex": "1"}),
-                    html.Button("Log out", id="logout-btn", n_clicks=0, style={"width": "100%", "padding": "10px", "background": "transparent", "border": f"1px solid {BORDER}", "borderRadius": "8px", "color": MUTED, "fontSize": "12px", "cursor": "pointer", "fontWeight": "500"}),
+                    html.Div(children=sidebar_items),
+                    html.Div(style={"marginTop": "auto"}, children=[
+                        html.Div(
+                            style={"background": "rgba(255,255,255,0.03)", "borderRadius": "1rem", "padding": "1.25rem", "border": "1px solid rgba(255,255,255,0.05)"},
+                            children=[
+                                html.Button(
+                                    children=[
+                                        html.I(className="fa-solid fa-right-from-bracket", style={"marginRight": "10px"}),
+                                        "Sign Out"
+                                    ], 
+                                    id="logout-btn", 
+                                    n_clicks=0, 
+                                    className="logout-btn-premium",
+                                    style={"marginTop": "0"} # Adjust margin since labels are gone
+                                )
+                            ]
+                        )
+                    ])
                 ]
             ),
-            # Main content
+            
+            # Main Content Area
             html.Div(
-                style={"flex": "1", "padding": "48px 64px", "overflowY": "auto", "height": "100vh", "boxSizing": "border-box"},
+                style={
+                    "marginLeft": "var(--sidebar-width)", 
+                    "minHeight": "100vh", 
+                    "display": "flex", 
+                    "flexDirection": "column",
+                    "width": "calc(100% - var(--sidebar-width))",
+                    "position": "relative"
+                },
                 children=[
+                    # Top Navigation Bar
                     html.Div(
-                        style={"display": "flex", "justifyContent": "space-between", "alignItems": "flex-end", "marginBottom": "40px"},
+                        style={
+                            "height": "var(--header-height)", 
+                            "background": "white", 
+                            "borderBottom": f"1px solid {BORDER}", 
+                            "display": "flex", 
+                            "alignItems": "center", 
+                            "justifyContent": "space-between", 
+                            "padding": "0 3rem", 
+                            "position": "sticky", 
+                            "top": "0", 
+                            "zIndex": "950",
+                            "flexShrink": "0"
+                        },
                         children=[
                             html.Div([
-                                html.P("Insights", style={"color": ACCENT, "fontSize": "11px", "fontWeight": "700", "textTransform": "uppercase", "letterSpacing": "0.1em", "margin": "0 0 4px"}),
-                                html.H1("Platform Analytics", style={"color": TEXT, "fontSize": "28px", "fontWeight": "700", "margin": "0", "letterSpacing": "-0.02em"}),
+                                html.H1(f"{pathname.replace('/','').title() if pathname != '/' else 'Dashboard Overview'}", style={"color": NAVY, "fontSize": "1.5rem", "fontWeight": "700", "margin": "0", "fontFamily": "Montserrat"}),
                             ]),
                             html.Div(
-                                style={"display": "flex", "gap": "12px", "alignItems": "center"},
+                                style={"display": "flex", "gap": "1rem", "alignItems": "center"},
                                 children=[
-                                    dcc.Dropdown(id="filter-country", options=[{"label": "All Markets", "value": "ALL"}] + [{"label": c, "value": c} for c in sorted(df["country"].unique())], value="ALL", clearable=False, style={"width": "160px", "fontSize": "12px"}),
-                                    dcc.Dropdown(id="filter-service", options=[{"label": "All Services", "value": "ALL"}] + [{"label": s, "value": s} for s in sorted(df["service_type"].unique())], value="ALL", clearable=False, style={"width": "160px", "fontSize": "12px"}),
+                                    html.Div([
+                                        html.P("Filter Country", style={"fontSize": "0.7rem", "fontWeight": "700", "color": MUTED, "margin": "0 0 4px", "textTransform": "uppercase"}),
+                                        dcc.Dropdown(id="filter-country", options=[{"label": "Global View", "value": "ALL"}] + [{"label": c, "value": c} for c in sorted(df["country"].unique())], value="ALL", clearable=False, style={"width": "160px", "fontSize": "0.8rem"}),
+                                    ]),
+                                    html.Div([
+                                        html.P("Filter Service", style={"fontSize": "0.7rem", "fontWeight": "700", "color": MUTED, "margin": "0 0 4px", "textTransform": "uppercase"}),
+                                        dcc.Dropdown(id="filter-service", options=[{"label": "All Services", "value": "ALL"}] + [{"label": s, "value": s} for s in sorted(df["service_type"].unique())], value="ALL", clearable=False, style={"width": "160px", "fontSize": "0.8rem"}),
+                                    ]),
                                 ]
                             ),
                         ]
                     ),
-                    html.Div(id="dynamic-page-content")
+                    
+                    # Page Body
+                    html.Div(
+                        style={
+                            "padding": "2.5rem 3rem", 
+                            "maxWidth": "1600px", 
+                            "width": "100%",
+                            "margin": "0 auto",
+                            "flex": "1"
+                        },
+                        id="dynamic-page-content"
+                    )
                 ]
             )
         ]
@@ -365,16 +552,24 @@ def update_dynamic_content(pathname, country_filter, service_filter):
     Output("session-store", "data"),
     Output("login-error", "children"),
     Input("login-btn", "n_clicks"),
+    Input("login-username", "n_submit"),
+    Input("login-password", "n_submit"),
     State("login-username", "value"),
     State("login-password", "value"),
     prevent_initial_call=True,
 )
-def handle_login(n_clicks, username, password):
+def handle_login(n_clicks, n_submit_u, n_submit_p, username, password):
     if not username or not password:
-        return dash.no_update, "Please enter credentials."
-    if username in USERS and USERS[username] == password:
-        return {"logged_in": True, "user": username}, ""
-    return dash.no_update, "Authentication failed."
+        return dash.no_update, "Identification required."
+    
+    # Robust credential check
+    clean_username = username.strip().lower()
+    clean_password = password.strip()
+    
+    if clean_username in USERS and USERS[clean_username] == clean_password:
+        return {"logged_in": True, "user": clean_username}, ""
+    
+    return dash.no_update, "Access Denied. Check credentials."
 
 @app.callback(
     Output("session-store", "data", allow_duplicate=True),
